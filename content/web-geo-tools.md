@@ -33,7 +33,7 @@ OpenStreetMap — это не просто бесплатная альтерна
 
 Overpass API — это read-only API для выборки данных из OpenStreetMap. Вы отправляете запрос на декларативном языке Overpass QL и получаете GeoJSON с объектами, попавшими в заданный bounding box. Публичный экземпляр доступен по адресу https://overpass-api.de/query_form.html
 
-```Overpass QL
+```OverpassQL
 [out:json][timeout:50];
 
 relation["natural"="water"]["name"="Байкал"];

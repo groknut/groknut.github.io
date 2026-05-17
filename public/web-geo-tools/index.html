@@ -1,22 +1,21 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Веб-инструменты для геоинформационного анализа — Groknut</title>
-        <link rel="stylesheet" href="/static/css/style.css" />
-        <link rel="stylesheet" href="/static/css/pygments.css" />
-    </head>
-    <body>
-        <header>
-            <h1>Groknut</h1>
-            <nav>
-                <a href="/">Main</a>
-                |
-                <a href="/about/">About</a>
-            </nav>
-        </header>
-        <main>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Веб-инструменты для геоинформационного анализа — Groknut</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Groknut</h1>
+    <nav>
+      <a href="/">Main</a>
+      |
+      <a href="/about/">About</a>
+    </nav>
+  </header>
+  <main>
 <article>
   <h1>Веб-инструменты для геоинформационного анализа</h1>
   <time>May 17, 2026</time>
@@ -39,16 +38,15 @@
 <p>Первый этап любого геоприложения — получить координаты. Нужно превратить адрес в точку на карте или выгрузить объекты (здания, дороги, POI) для заданной территории. Раньше для этого разворачивали собственную базу с импортом дампов OSM и поднимали геокодер. Сейчас разработчик может использовать публичные API, не заботясь об инфраструктуре. Ниже — инструменты, к которым приложение обращается по HTTP и получает GeoJSON.</p>
 <h3>Overpass API — сырые данные OpenStreetMap по запросу</h3>
 <p>Overpass API — это read-only API для выборки данных из OpenStreetMap. Вы отправляете запрос на декларативном языке Overpass QL и получаете GeoJSON с объектами, попавшими в заданный bounding box. Публичный экземпляр доступен по адресу https://overpass-api.de/query_form.html</p>
-<p>```Overpass QL
-[out:json][timeout:50];</p>
-<p>relation["natural"="water"]["name"="Байкал"];</p>
-<p>out body;</p>
-<blockquote>
-<p>;
-out skel qt;
-```</p>
-</blockquote></div>
+<div class="codehilite"><pre><span></span><code><span class="cp">[</span><span class="nx">out</span><span class="p">:</span><span class="nx">json</span><span class="cp">][</span><span class="nx">timeout</span><span class="p">:</span><span class="mi">50</span><span class="cp">]</span><span class="o">;</span>
+
+<span class="nt">relation</span><span class="cp">[</span><span class="s2">&quot;natural&quot;</span><span class="o">=</span><span class="s2">&quot;water&quot;</span><span class="cp">][</span><span class="s2">&quot;name&quot;</span><span class="o">=</span><span class="s2">&quot;Байкал&quot;</span><span class="cp">]</span><span class="o">;</span>
+
+<span class="nt">out</span><span class="w"> </span><span class="nt">body</span><span class="o">;</span>
+<span class="o">&gt;;</span>
+<span class="nt">out</span><span class="w"> </span><span class="nt">skel</span><span class="w"> </span><span class="nt">qt</span><span class="o">;</span>
+</code></pre></div></div>
 </article>
 </main>
-    </body>
+</body>
 </html>
