@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} — {{ site.title }}{% endblock %}
+{% block body %}
+<article>
+  <h1>{{ post.title }}</h1>
+  <time>{{ post.formatted_date }}</time>
+  <div>{{ post.content | safe }}</div>
+</article>
+{% endblock %}
