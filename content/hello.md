@@ -1,5 +1,7 @@
 ---
 title: "Hello, world!"
-date: 2025-01-01
+date: 2026-05-17
 ---
-Welocme to my blog!
+Welcome to my blog!
+
+It's for test my SSG on python. Because there is drafts.
