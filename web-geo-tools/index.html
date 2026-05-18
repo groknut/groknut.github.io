@@ -19,7 +19,7 @@
 <article>
   <h1>Веб-инструменты для геоинформационного анализа</h1>
   <time>May 17, 2026</time>
-  <div><h2>Введение</h2>
+  <div><h1>Введение</h1>
 <p>Разработка веб-приложений с функциями геоанализа требует от программиста понимания специфической инфраструктуры. </p>
 <p>В отличие от стандартных CRUD-приложений, здесь приходится работать с тяжелой геометрией, миллионами географических точек, пространственными индексами. 
 Перед разработчиком всегда стоит выбор: разворачивать собственную связку из базы данных PostGIS и картографического сервера или использовать готовые облачные платформы и веб-инструменты с открытым API. Во втором случае скорость запуска проекта увеличивается в разы. 
@@ -34,10 +34,11 @@
 </ul>
 <p>Любому элементу в OSM можно присвоить бесконечное количество текстовых тегов. Именно они определяют, чем является объект. </p>
 <p><strong>Главный минус:</strong> Так как данные собирают люди, тегирование иногда бывает неконсистентным. При написании парсеров всегда нужно закладывать логику на обработку дублирующих или устаревших тегов.</p>
-<h2>Данные и геокодирование</h2>
-<p>Первый этап любого геоприложения — получить координаты. Нужно превратить адрес в точку на карте или выгрузить объекты (здания, дороги, POI) для заданной территории. Раньше для этого разворачивали собственную базу с импортом дампов OSM и поднимали геокодер. Сейчас разработчик может использовать публичные API, не заботясь об инфраструктуре. Ниже — инструменты, к которым приложение обращается по HTTP и получает GeoJSON.</p>
+<h1>Данные и геокодирование</h1>
+<p>Первый этап любого геоприложения — получить координаты. Нужно превратить адрес в точку на карте или выгрузить объекты (здания, дороги, POI) для заданной территории.</p>
 <h3>Overpass API — сырые данные OpenStreetMap по запросу</h3>
-<p>Overpass API — это read-only API для выборки данных из OpenStreetMap. Вы отправляете запрос на декларативном языке Overpass QL и получаете GeoJSON с объектами, попавшими в заданный bounding box. Публичный экземпляр доступен по адресу https://overpass-api.de/query_form.html</p>
+<p>Overpass API — это read-only API для выборки данных из OpenStreetMap. Вы отправляете запрос на декларативном языке Overpass QL и получаете GeoJSON с объектами, попавшими в заданный bounding box. </p>
+<p>Публичный экземпляр доступен по адресу https://overpass-api.de/query_form.html</p>
 <div class="codehilite"><pre><span></span><code><span class="cp">[</span><span class="nx">out</span><span class="p">:</span><span class="nx">json</span><span class="cp">][</span><span class="nx">timeout</span><span class="p">:</span><span class="mi">50</span><span class="cp">]</span><span class="o">;</span>
 
 <span class="nt">relation</span><span class="cp">[</span><span class="s2">&quot;natural&quot;</span><span class="o">=</span><span class="s2">&quot;water&quot;</span><span class="cp">][</span><span class="s2">&quot;name&quot;</span><span class="o">=</span><span class="s2">&quot;Байкал&quot;</span><span class="cp">]</span><span class="o">;</span>
@@ -45,7 +46,82 @@
 <span class="nt">out</span><span class="w"> </span><span class="nt">body</span><span class="o">;</span>
 <span class="o">&gt;;</span>
 <span class="nt">out</span><span class="w"> </span><span class="nt">skel</span><span class="w"> </span><span class="nt">qt</span><span class="o">;</span>
-</code></pre></div></div>
+</code></pre></div>
+
+<div class="codehilite"><pre><span></span><code><span class="cp">[</span><span class="nx">out</span><span class="p">:</span><span class="nx">json</span><span class="cp">][</span><span class="nx">timeout</span><span class="p">:</span><span class="mi">50</span><span class="cp">]</span><span class="o">;</span>
+<span class="o">(</span>
+<span class="w">  </span><span class="nt">relation</span><span class="cp">[</span><span class="s2">&quot;name&quot;</span><span class="o">=</span><span class="s2">&quot;Байкал&quot;</span><span class="cp">]</span><span class="o">(</span><span class="nt">around</span><span class="p">:</span><span class="nd">300000</span><span class="o">,</span><span class="w"> </span><span class="nt">53</span><span class="p">.</span><span class="nc">5</span><span class="o">,</span><span class="w"> </span><span class="nt">108</span><span class="p">.</span><span class="nc">0</span><span class="o">);</span>
+<span class="o">);</span>
+<span class="nt">out</span><span class="w"> </span><span class="nt">geom</span><span class="o">;</span>
+</code></pre></div>
+
+<p>Для визуализации запросов можно зайти на https://overpass-turbo.eu/#, ввести запрос и посмотреть результаты.</p>
+<h3>Nominatim</h3>
+<p>Nominatim использует данные OpenStreetMap для поиска мест на Земле по названию и адрес (геокодирование). Также можно сделать наоборот — найти адрес для любого Местоположение на планете.</p>
+<p>Он легко масштабируется, настраивается, обрабатывает 30 миллионов запросов на каждйы день на одном сервере.</p>
+<div class="codehilite"><pre><span></span><code>https://nominatim.openstreetmap.org/ui/search?q=Байкал
+</code></pre></div>
+
+<h2>Photon</h2>
+<p>Open Source геокодер, демо-сервер находится по адресу https://photon.komoot.io/. Основан на OpenSearch - эффективной, мощной и высокомасштабируемой поисковой платформой.</p>
+<p><strong>Особенности:</strong>
+- Высокие характеристики
+- Высокая масштабируемость
+- Поиск по типу
+- Многоязычный поиск
+- Смещение локации
+- Толерантность к опечаткам
+- Фильтр по тегу OSM и значению
+- Фильтр с ограничивающей рамкой
+- Обратный геокод на координату в адрес
+- Импорт данных OSM (построенный на основе Nominatim), включающий непрерывные обновления
+- импортные и экспортные дампы в конкатенированном формате JSON</p>
+<p>Пример запроса</p>
+<div class="codehilite"><pre><span></span><code>https://photon.komoot.io/api/?q=baikal
+</code></pre></div>
+
+<h2>MapBox</h2>
+<p>Mapbox Geocoding API — коммерческий сервис с высоким качеством результатов и контекстными подсказками. Доступен через 
+- REST
+- официальный JS-SDK
+- ios/android/flutter</p>
+<div class="codehilite"><pre><span></span><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&quot;utf-8&quot;</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>Display a map on a webpage<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">meta</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;viewport&quot;</span> <span class="na">content</span><span class="o">=</span><span class="s">&quot;initial-scale=1,maximum-scale=1,user-scalable=no&quot;</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">&quot;https://api.mapbox.com/mapbox-gl-js/v3.23.1/mapbox-gl.css&quot;</span> <span class="na">rel</span><span class="o">=</span><span class="s">&quot;stylesheet&quot;</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">&quot;https://api.mapbox.com/mapbox-gl-js/v3.23.1/mapbox-gl.js&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">style</span><span class="p">&gt;</span>
+<span class="nt">body</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">margin</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="k">padding</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">#</span><span class="nn">map</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">position</span><span class="p">:</span><span class="w"> </span><span class="kc">absolute</span><span class="p">;</span><span class="w"> </span><span class="k">top</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="k">bottom</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="k">width</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="kt">%</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">&lt;/</span><span class="nt">style</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">div</span> <span class="na">id</span><span class="o">=</span><span class="s">&quot;map&quot;</span><span class="p">&gt;&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span>
+<span class="w">    </span><span class="c1">// TO MAKE THE MAP APPEAR YOU MUST</span>
+<span class="w">    </span><span class="c1">// ADD YOUR ACCESS TOKEN FROM</span>
+<span class="w">    </span><span class="c1">// https://account.mapbox.com</span>
+<span class="w">    </span><span class="nx">mapboxgl</span><span class="p">.</span><span class="nx">accessToken</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;YOUR_MAPBOX_ACCESS_TOKEN&#39;</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">mapboxgl</span><span class="p">.</span><span class="nb">Map</span><span class="p">({</span>
+<span class="w">        </span><span class="nx">container</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;map&#39;</span><span class="p">,</span><span class="w"> </span><span class="c1">// container ID</span>
+<span class="w">        </span><span class="nx">center</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="o">-</span><span class="mf">71.06776</span><span class="p">,</span><span class="w"> </span><span class="mf">42.35816</span><span class="p">],</span><span class="w"> </span><span class="c1">// starting position [lng, lat]. Note that lat must be set between -90 and 90</span>
+<span class="w">        </span><span class="nx">zoom</span><span class="o">:</span><span class="w"> </span><span class="mf">9</span><span class="w"> </span><span class="c1">// starting zoom</span>
+<span class="w">    </span><span class="p">});</span>
+<span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+
+<span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+</code></pre></div>
+
+<h2>Geoapify</h2>
+<p>Geoapify — это платформа с множеством функций, подходящая для бизнеса любого размера. Они предлагают карты, поиск адресов и местоположения, оптимизацию маршрутов, анализ доступности, доступ к геоданным и многое другое.</p>
+<p>Ссылка на демо: https://apidocs.geoapify.com/playground/maps/</p>
+<h1>Хранение и обработка геометрий на стороне клиента</h1>
+<p>Следующая задача -&gt; преобразовать, фильтровать, проанализировать и отобразить полученные данные. Используя специализированные библиотеки можно выполнить эту задачу достаточно быстро, проводя вычисления на чистом JS. </p>
+<h2></h2></div>
 </article>
 </main>
 </body>
