@@ -21,10 +21,8 @@
   <time>May 18, 2026</time>
   <div><p>Черновик решения</p>
 <h2>Введение</h2>
-<p>Разработка веб-приложений с функциями геоанализа требует от программиста понимания специфической инфраструктуры. </p>
-<p>В отличие от стандартных CRUD-приложений, здесь приходится работать с тяжелой геометрией, миллионами географических точек, пространственными индексами. 
-Перед нами всегда стоит выбор: разворачивать собственную связку из базы данных и картографического сервера или использовать готовые облачные платформы и веб-инструменты с открытым API. 
-Сейчас разберем эти платформы кратко: от автоматизированного сбора пространственных данных до их высокопроизводительного рендеринга в браузере.</p>
+<p>Разработка веб-приложений с функциями геоанализа требует от программиста понимания специфической инфраструктуры. В отличие от стандартных CRUD-приложений, здесь приходится работать с тяжелой геометрией, миллионами географических точек, пространственными индексами. Перед нами всегда стоит выбор: разворачивать собственную связку из базы данных и картографического сервера или использовать готовые облачные платформы и веб-инструменты с открытым API.</p>
+<p>В этом обзоре мы сосредоточимся на open‑source‑стеке, который позволяет решать большинство задач без вендорной привязки: от автоматизированного сбора пространственных данных до их высокопроизводительного рендеринга в браузере.</p>
 <h2>Специфика работы с OpenStreetMap (OSM)</h2>
 <p>OpenStreetMap — это не просто бесплатная альтернатива коммерческим картам, а огромная глобальная база геоданных, наполняемая краудсорсингом. </p>
 <p>В отличие от привычных слоев в ГИС, где точки, линии и полигоны лежат в разных таблицах, в OSM все данные хранятся в виде единого плоского графа, состоящего всего из трех базовых элементов:</p>
@@ -56,57 +54,66 @@
 <span class="nt">out</span><span class="w"> </span><span class="nt">geom</span><span class="o">;</span>
 </code></pre></div>
 
+<p>При частых запросах лучше поднять собственный экземпляр Overpass, чтобы не упираться в ограничения публичного сервера.</p>
 <p>Для визуализации запросов можно зайти на https://overpass-turbo.eu/#, ввести запрос и посмотреть результаты.</p>
 <h3>Nominatim</h3>
 <p>Nominatim использует данные OpenStreetMap для поиска мест на Земле по названию и адрес (геокодирование). Также можно сделать наоборот — найти адрес для любого Местоположение на планете.</p>
 <p>Он легко масштабируется, настраивается, обрабатывает 30 миллионов запросов на каждйы день на одном сервере.</p>
-<div class="codehilite"><pre><span></span><code>https://nominatim.openstreetmap.org/ui/search?q=Байкал
+<div class="codehilite"><pre><span></span><code><span class="c1">// прямой запрос</span>
+<span class="n">https</span><span class="p">:</span><span class="c1">//nominatim.openstreetmap.org/ui/search?q=Байкал</span>
+<span class="c1">// обратный запрос</span>
+<span class="n">https</span><span class="p">:</span><span class="c1">//nominatim.openstreetmap.org/reverse?format=json&amp;lat=52.28&amp;lon=104.28</span>
 </code></pre></div>
 
 <h3>Photon</h3>
 <p>Open Source геокодер, демо-сервер находится по адресу https://photon.komoot.io/. Основан на OpenSearch - эффективной, мощной и высокомасштабируемой поисковой платформой.</p>
-<p><strong>Особенности:</strong>
-- Высокие характеристики
-- Высокая масштабируемость
-- Поиск по типу
-- Многоязычный поиск
-- Смещение локации
-- Толерантность к опечаткам
-- Фильтр по тегу OSM и значению
-- Фильтр с ограничивающей рамкой
-- Обратный геокод на координату в адрес
-- Импорт данных OSM (построенный на основе Nominatim), включающий непрерывные обновления
-- импортные и экспортные дампы в конкатенированном формате JSON</p>
+<p><strong>Особенности:</strong></p>
+<ul>
+<li>Высокие характеристики</li>
+<li>Высокая масштабируемость</li>
+<li>Поиск по типу</li>
+<li>Многоязычный поиск</li>
+<li>Смещение локации</li>
+<li>Толерантность к опечаткам</li>
+<li>Фильтр по тегу OSM и значению</li>
+<li>Фильтр с ограничивающей рамкой</li>
+<li>Обратный геокод на координату в адрес</li>
+<li>Импорт данных OSM (построенный на основе Nominatim), включающий непрерывные обновления</li>
+<li>импортные и экспортные дампы в конкатенированном формате JSON</li>
+</ul>
 <p>Пример запроса</p>
 <div class="codehilite"><pre><span></span><code>https://photon.komoot.io/api/?q=baikal
 </code></pre></div>
 
+<h2>Серверная подготовка и хранение данных</h2>
+<p>Хотя часть обработки можно выполнить прямо в браузере, серьёзные проекты требуют серверных компонентов. Ключевые инструменты:</p>
+<ul>
+<li>PostGIS — расширение PostgreSQL, добавляет поддержку геометрических типов, пространственных индексов и сотен аналитических функций. Идеально для хранения миллионов объектов и выполнения тяжёлых расчётов (буферы, пересечения, агрегация).</li>
+<li>Tippecanoe — утилита для преобразования GeoJSON в векторные тайлы (MBTiles). Позволяет задавать уровни упрощения и группировки, чтобы быстро показывать огромные наборы данных на карте.</li>
+<li>Martin / pg_tileserv — легковесные серверы, которые «на лету» отдают векторные тайлы напрямую из PostGIS. С их помощью можно обслуживать данные без предварительной нарезки статических тайлов.</li>
+<li>GeoServer / MapServer — полнофункциональные картографические серверы, поддерживающие WMS, WFS и множество форматов. Подходят для публикации сложных слоёв и совместимы со стандартами OGC.</li>
+</ul>
+<p>Эти компоненты образуют back‑end геоприложения, обеспечивая быстрый доступ к подготовленным данным.</p>
 <h2>Хранение и обработка геометрий на стороне клиента</h2>
 <p>Следующая задача -&gt; преобразовать, фильтровать, проанализировать и отобразить полученные данные. Используя специализированные библиотеки можно выполнить эту задачу достаточно быстро, проводя вычисления на чистом JS. </p>
 <h3>turf.js</h3>
 <p>Turf — это библиотека JavaScript для пространственного анализа, которая включает традиционные пространственные операции, вспомогательные функции для создания данных GeoJSON, а также инструменты классификации и статистики данных. Его можно добавить в иде влкиентского модуля, либо запустить на сервере с node.js.</p>
 <div class="codehilite"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">baikalCenter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">turf</span><span class="p">.</span><span class="nx">point</span><span class="p">([</span><span class="mf">108.00</span><span class="p">,</span><span class="w"> </span><span class="mf">53.50</span><span class="p">]);</span>
-
 <span class="kd">const</span><span class="w"> </span><span class="nx">irkutsk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">turf</span><span class="p">.</span><span class="nx">point</span><span class="p">([</span><span class="mf">104.28</span><span class="p">,</span><span class="w"> </span><span class="mf">52.28</span><span class="p">]);</span>
-
 <span class="kd">const</span><span class="w"> </span><span class="nx">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">units</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;kilometers&#39;</span><span class="w"> </span><span class="p">};</span>
 <span class="kd">const</span><span class="w"> </span><span class="nx">distance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">turf</span><span class="p">.</span><span class="nx">distance</span><span class="p">(</span><span class="nx">baikalCenter</span><span class="p">,</span><span class="w"> </span><span class="nx">irkutsk</span><span class="p">,</span><span class="w"> </span><span class="nx">options</span><span class="p">);</span>
-
 <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Distance: </span><span class="si">${</span><span class="nx">distance</span><span class="p">.</span><span class="nx">toFixed</span><span class="p">(</span><span class="mf">2</span><span class="p">)</span><span class="si">}</span><span class="sb"> km`</span><span class="p">);</span>
 </code></pre></div>
 
+<p>Turf отлично справляется с операциями над несколькими сотнями объектов. Если же требуется обсчитать миллионы полигонов, лучше перенести вычисления на сервер с PostGIS.</p>
 <h3>GeoJson-VT</h3>
 <p>Высокоэффективная библиотека JavaScript для слайсирования данных GeoJSON на векторные плитки на лету, В первую очередь разработан для возможности рендеринга и взаимодействия с большими геопространственными наборами данных На стороне браузера (без сервера).</p>
-<div class="codehilite"><pre><span></span><code><span class="c1">// build an initial index of tiles</span>
-<span class="kd">var</span><span class="w"> </span><span class="nx">tileIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">geojsonvt</span><span class="p">(</span><span class="nx">geoJSON</span><span class="p">);</span>
-
-<span class="c1">// request a particular tile</span>
+<div class="codehilite"><pre><span></span><code><span class="kd">var</span><span class="w"> </span><span class="nx">tileIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">geojsonvt</span><span class="p">(</span><span class="nx">geoJSON</span><span class="p">);</span>
 <span class="kd">var</span><span class="w"> </span><span class="nx">features</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">tileIndex</span><span class="p">.</span><span class="nx">getTile</span><span class="p">(</span><span class="nx">z</span><span class="p">,</span><span class="w"> </span><span class="nx">x</span><span class="p">,</span><span class="w"> </span><span class="nx">y</span><span class="p">).</span><span class="nx">features</span><span class="p">;</span>
-
-<span class="c1">// show an array of tile coordinates created so far</span>
 <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">tileIndex</span><span class="p">.</span><span class="nx">tileCoords</span><span class="p">);</span>
 </code></pre></div>
 
+<p>GeoJSON-VT встроена во многие картографические библиотеки (Mapbox GL JS, MapLibre GL JS). Для статичных наборов данных, отображаемых на многих клиентах, всё же эффективнее один раз сгенерировать тайлы на сервере (например, с помощью Tippecanoe).</p>
 <h2>Визуализация</h2>
 <p>И последней задачей для нас является визуализация результата на сайте.</p>
 <h3>Leaflet</h3>
@@ -132,9 +139,9 @@ deck.gl API разработаны с участием парадигмы реа
 </li>
 </ol>
 <h3>Kepler.gl</h3>
-<p>Мощный open source инструмент геопространственного анализа для больших наборов данных.</p>
-<h2>Конец</h2>
-<p>Конечно же, здесь перечислены не все инструменты, так как их огромное множество.</p></div>
+<p>Мощный open‑source инструмент геопространственного анализа с визуальным интерфейсом. Он не требует программирования: пользователь перетаскивает слои и настраивает визуализацию прямо в браузере. Kepler.gl можно встроить как React‑компонент или использовать как отдельное веб‑приложение. Отлично подходит для исследовательского анализа данных перед разработкой собственного решения.</p>
+<h2>Вывод</h2>
+<p>Конечно, здесь перечислены не все инструменты — экосистема геотехнологий огромна. Но описанного набора достаточно, чтобы уверенно стартовать в веб‑геоанализе и постепенно углубляться в специализированные решения.</p></div>
 </article>
 </main>
 </body>
